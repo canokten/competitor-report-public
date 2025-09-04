@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "title": "Hair Salons — Vancouver, BC",
+    "subtitle": "Live dashboards (public test)"
+  },
+  "viewer": { "id": "public", "val": "na" },
+  "dashboards": [
+    { "title": "Business Density by Neighborhood", "id": "01f0891982461429a870fd0d521d7867" },
+    { "title": "Neighborhood Performance Score", "id": "01f08921c16d1ce786acc9605ed84f2f" },
+    { "title": "Competitor Locations & Densities", "id": "01f08921e0a612739fcc3b61d87350bd" },
+    { "title": "Top 25 (Weighted Score)", "id": "01f08921eed412aeb33d7a48d7304cfd" },
+    { "title": "Bottom 25 (Weighted Score)", "id": "01f08921fb4516ccb2a247155430cb2f" }
+  ]
+}
