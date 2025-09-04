@@ -42,7 +42,7 @@
     const TOKEN_ENDPOINT = 'https://dbx-token-service.vercel.app/api/databricks-token';
 
     // 2) Load config JSON from the same repo
-    const cfg = await (await fetch('./report.config.json', { cache: 'no-store' })).json();
+    const cfg = await (await fetch('./config.json', { cache: 'no-store' })).json();
 
     // 3) Basic header + KPI text
     document.getElementById('title').textContent = cfg.meta.title;
