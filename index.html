@@ -22,7 +22,7 @@
   </div>
 
   <script type="module">
-    const TOKEN_ENDPOINT = "https://<YOUR-VERCEL-APP>.vercel.app/api/databricks-token";
+    const TOKEN_ENDPOINT = 'https://dbx-token-service.vercel.app/api/databricks-token';
 
     const cfg = await (await fetch("./config.json", {cache:"no-store"})).json();
     document.getElementById("title").textContent = cfg.meta.title;
