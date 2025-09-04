@@ -2,43 +2,110 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Competitor Report — Public</title>
+  <title>Competitor Report — Vancouver, BC</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { margin:0; font-family:sans-serif; background:#0b1020; color:#e6ecff; }
-    .wrap { max-width:1100px; margin:0 auto; padding:24px; }
-    h1 { margin-bottom:12px; }
-    .card { background:#121a35; border-radius:12px; padding:12px; margin-bottom:16px; }
-    .frame { width:100%; height:480px; border-radius:8px; background:#0f152e; }
-    .small { font-size:12px; color:#9fb3ff; }
+    :root { --bg:#0b1020; --card:#121a35; --ink:#e6ecff; --muted:#9fb3ff; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:var(--bg); color:var(--ink); }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 6px; }
+    .muted { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+    .grid { display:grid; gap:16px; grid-template-columns: 1fr; }
+    @media (min-width: 980px){ .grid { grid-template-columns: 1fr 1fr; } }
+    .card { background:var(--card); border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.25); }
+    .frame { width:100%; height:560px; border:0; background:var(--bg); }
+    .small { font-size:12px; color:var(--muted); }
+    .kpis { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:12px; margin:16px 0 8px; }
+    .kpi { background:var(--card); padding:12px; border-radius:12px; }
+    .kpi h4 { margin:0 0 6px; font-weight:600; }
+    .kpi .stat { font-size:24px; font-weight:700; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1 id="title">Report</h1>
-    <p id="subtitle" class="small"></p>
+    <div id="subtitle" class="muted"></div>
 
-    <div id="dashboards"></div>
+    <!-- KPI row (optional) -->
+    <div class="kpis" id="kpis"></div>
+
+    <!-- Dashboards -->
+    <div id="dash-grid" class="grid"></div>
+
+    <p class="small" style="margin-top:16px">
+      If a card appears blank, enable third-party cookies.
+    </p>
   </div>
 
   <script type="module">
+    // 1) Where your token endpoint lives
     const TOKEN_ENDPOINT = 'https://dbx-token-service.vercel.app/api/databricks-token';
 
-    const cfg = await (await fetch("./config.json", {cache:"no-store"})).json();
-    document.getElementById("title").textContent = cfg.meta.title;
-    document.getElementById("subtitle").textContent = cfg.meta.subtitle;
+    // 2) Load config JSON from the same repo
+    const cfg = await (await fetch('./report.config.json', { cache: 'no-store' })).json();
 
-    const dashWrap = document.getElementById("dashboards");
+    // 3) Basic header + KPI text
+    document.getElementById('title').textContent = cfg.meta.title;
+    document.getElementById('subtitle').textContent = cfg.meta.subtitle;
+
+    const kpis = document.getElementById('kpis');
+    for (const k of (cfg.kpis || [])) {
+      const div = document.createElement('div');
+      div.className = 'kpi';
+      div.innerHTML = `<h4>${k.label}</h4><div class="stat">${k.value}</div><div class="small">${k.note||''}</div>`;
+      kpis.appendChild(div);
+    }
+
+    // 4) Create cards for each dashboard
+    const grid = document.getElementById('dash-grid');
+    for (const d of cfg.dashboards) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      const h = d.height || 560;
+      card.innerHTML = `<h3 style="margin:0 0 12px">${d.title}</h3><div id="c_${d.id}" class="frame" style="height:${h}px"></div>`;
+      grid.appendChild(card);
+    }
+
+    // 5) Lazy-load Databricks client
     const { DatabricksDashboard } = await import(
-      "https://cdn.jsdelivr.net/npm/@databricks/aibi-client@0.0.0-alpha.7/+esm"
+      'https://cdn.jsdelivr.net/npm/@databricks/aibi-client@0.0.0-alpha.7/+esm'
     );
 
-    async function renderDash(d) {
-      const box = document.createElement("div");
-      box.className = "card";
-      box.innerHTML = `<h3>${d.title}</h3><div id="c_${d.id}" class="frame"></div>`;
-      dashWrap.appendChild(box);
+    async function renderDashboard(d) {
+      // fetch a down-scoped token for THIS dashboard id
+      const u = new URL(TOKEN_ENDPOINT);
+      u.searchParams.set('dashboard', d.id);
+      if (cfg.viewer?.id)  u.searchParams.set('viewer', cfg.viewer.id);
+      if (cfg.viewer?.val) u.searchParams.set('val', cfg.viewer.val);
+
+      let payload;
+      try {
+        const r = await fetch(u, { credentials: 'omit' });
+        payload = await r.json();
+        if (!payload.token) throw new Error(payload.error || 'No token');
+      } catch (e) {
+        document.getElementById(`c_${d.id}`).innerHTML =
+          `<div class="small">Token error for "${d.title}": ${e.message || e}</div>`;
+        return;
+      }
 
       try {
-        const u = new URL(TOKEN_ENDPOINT);
-        u.searchParams.set("d
+        const dash = new DatabricksDashboard({
+          instanceUrl: payload.instanceUrl,
+          workspaceId: payload.workspaceId,
+          dashboardId: d.id,
+          token: payload.token,
+          container: document.getElementById(`c_${d.id}`)
+        });
+        await dash.initialize();
+      } catch (e) {
+        document.getElementById(`c_${d.id}`).innerHTML =
+          `<div class="small">Render failed: ${d.title}. ${e.message || e}</div>`;
+      }
+    }
+
+    // Render sequentially (reduce burst requests)
+    for (const d of cfg.dashboards) await renderDashboard(d);
+  </script>
+</body>
+</html>
