@@ -24,7 +24,7 @@
       display:grid;
       gap:16px;
       grid-template-columns: repeat(2, minmax(0, 1fr)); /* two columns */
-      grid-auto-rows: 1px; /* <-- key: 1px tracks; items span pixels */
+      grid-auto-rows: 1px; /* items span measured pixels */
       align-items: stretch;
     }
     @media (max-width: 979px){
@@ -50,17 +50,16 @@
   </div>
 
   <script type="module">
-    // 1) Where your token endpoint lives
+    // 1) Token endpoint
     const TOKEN_ENDPOINT = 'https://dbx-token-service.vercel.app/api/databricks-token';
 
-    // 2) Load config JSON from the same repo
+    // 2) Load config
     const cfg = await (await fetch('./config.json', { cache: 'no-store' })).json();
 
-    // 3) Basic header + KPI text
-    document.getElementById('title').textContent = cfg.meta.title;
-    document.getElementById('subtitle').textContent = cfg.meta.subtitle;
+    // 3) Header + KPIs
+    title.textContent = cfg.meta.title;
+    subtitle.textContent = cfg.meta.subtitle;
 
-    const kpis = document.getElementById('kpis');
     for (const k of (cfg.kpis || [])) {
       const div = document.createElement('div');
       div.className = 'kpi';
@@ -68,11 +67,10 @@
       kpis.appendChild(div);
     }
 
-    // 4) Create cards with integer spanCols and pixel-based row spans (fractional factors supported)
+    // 4) Build cards (width via integer spanCols; height via heightFactor or integer rows)
     const grid = document.getElementById('dash-grid');
 
     const cssUnitRaw = getComputedStyle(document.documentElement).getPropertyValue('--unit').trim();
-    // parse something like "560px" to 560
     const unitPx = Number(cssUnitRaw.replace('px','').trim()) || 560;
 
     const toInt = (v, def=1) => {
@@ -84,6 +82,16 @@
       return Number.isFinite(n) ? n : undefined;
     };
 
+    // Resize helper: measure and set grid-row-end to span measured pixels
+    const resizeCard = (card) => {
+      const px = Math.max(1, Math.ceil(card.getBoundingClientRect().height));
+      card.style.gridRowEnd = `span ${px}`;
+    };
+
+    const ro = new ResizeObserver(entries => {
+      for (const e of entries) resizeCard(e.target);
+    });
+
     const cards = [];
     for (const d of cfg.dashboards) {
       const spanCols = toInt(d.spanCols, 1);
@@ -93,32 +101,35 @@
         toNum(d.heightFactor) ??
         ((sr !== undefined && !Number.isInteger(sr)) ? sr : undefined);
 
-      // Compute pixel span
-      const pixelSpan = heightFactor !== undefined
-        ? Math.max(1, Math.round(unitPx * heightFactor))
-        : Math.max(1, Math.round(unitPx * toInt(d.spanRows, 1)));
+      // Target content height for the inner frame
+      const targetHeightPx = heightFactor !== undefined
+        ? unitPx * heightFactor
+        : unitPx * toInt(d.spanRows, 1);
 
       const card = document.createElement('div');
       card.className = 'card';
       card.style.gridColumn = `span ${spanCols}`;
-      card.style.gridRow = `span ${pixelSpan}`; // <-- spans N pixels because auto-rows = 1px
 
       const containerId = `c_${d.id}`;
       card.innerHTML = `
         <h3 style="margin:0 0 12px">${d.title}</h3>
-        <div id="${containerId}" class="frame"></div>
+        <div id="${containerId}" class="frame" style="height:${Math.round(targetHeightPx)}px"></div>
       `;
       grid.appendChild(card);
-      cards.push({ d, containerId });
+
+      // Measure now and on future resizes
+      resizeCard(card);
+      ro.observe(card);
+
+      cards.push({ d, containerId, card });
     }
 
-    // 5) Lazy-load Databricks client
+    // 5) Databricks embed
     const { DatabricksDashboard } = await import(
       'https://cdn.jsdelivr.net/npm/@databricks/aibi-client@0.0.0-alpha.7/+esm'
     );
 
     async function renderDashboard(d, containerId) {
-      // fetch a down-scoped token for THIS dashboard id
       const u = new URL(TOKEN_ENDPOINT);
       u.searchParams.set('dashboard', d.id);
       if (cfg.viewer?.id)  u.searchParams.set('viewer', cfg.viewer.id);
@@ -150,10 +161,16 @@
       }
     }
 
-    // Render sequentially (reduce burst requests)
-    for (const { d, containerId } of cards) {
+    // Render sequentially and re-measure after each embed initializes
+    for (const { d, containerId, card } of cards) {
       await renderDashboard(d, containerId);
+      resizeCard(card);
     }
+
+    // Re-measure on window resize (fonts/width changes)
+    window.addEventListener('resize', () => {
+      for (const { card } of cards) resizeCard(card);
+    });
   </script>
 </body>
 </html>
