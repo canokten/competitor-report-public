@@ -24,7 +24,7 @@
       display:grid;
       gap:16px;
       grid-template-columns: repeat(2, minmax(0, 1fr)); /* two columns */
-      grid-auto-rows: 1px; /* items span measured pixels */
+      grid-auto-rows: 1px; /* each "row unit" is 1px; cards span N px */
       align-items: stretch;
     }
     @media (max-width: 979px){
@@ -50,81 +50,57 @@
   </div>
 
   <script type="module">
-    // 1) Token endpoint
     const TOKEN_ENDPOINT = 'https://dbx-token-service.vercel.app/api/databricks-token';
-
-    // 2) Load config
     const cfg = await (await fetch('./config.json', { cache: 'no-store' })).json();
 
-    // 3) Header + KPIs
-    title.textContent = cfg.meta.title;
-    subtitle.textContent = cfg.meta.subtitle;
-
+    // Header + KPIs
+    document.getElementById('title').textContent = cfg.meta.title;
+    document.getElementById('subtitle').textContent = cfg.meta.subtitle;
     for (const k of (cfg.kpis || [])) {
-      const div = document.createElement('div');
-      div.className = 'kpi';
-      div.innerHTML = `<h4>${k.label}</h4><div class="stat">${k.value}</div><div class="small">${k.note||''}</div>`;
-      kpis.appendChild(div);
+      const el = document.createElement('div');
+      el.className = 'kpi';
+      el.innerHTML = `<h4>${k.label}</h4><div class="stat">${k.value}</div><div class="small">${k.note||''}</div>`;
+      document.getElementById('kpis').appendChild(el);
     }
 
-    // 4) Build cards (width via integer spanCols; height via heightFactor or integer rows)
     const grid = document.getElementById('dash-grid');
 
+    // Parse X (the base unit in px)
     const cssUnitRaw = getComputedStyle(document.documentElement).getPropertyValue('--unit').trim();
-    const unitPx = Number(cssUnitRaw.replace('px','').trim()) || 560;
+    const unitPx = Number((cssUnitRaw || '560px').replace('px','').trim()) || 560;
 
     const toInt = (v, def=1) => {
       const n = Number(v);
       return Number.isFinite(n) && n >= 1 ? Math.floor(n) : def;
     };
-    const toNum = (v) => {
+    const toNum = (v, def=1) => {
       const n = Number(v);
-      return Number.isFinite(n) ? n : undefined;
+      return Number.isFinite(n) && n > 0 ? n : def;
     };
 
-    // Resize helper: measure and set grid-row-end to span measured pixels
-    const resizeCard = (card) => {
-      const px = Math.max(1, Math.ceil(card.getBoundingClientRect().height));
-      card.style.gridRowEnd = `span ${px}`;
-    };
-
-    const ro = new ResizeObserver(entries => {
-      for (const e of entries) resizeCard(e.target);
-    });
-
+    // Build cards — width via spanCols, height via heightFactor * X
     const cards = [];
     for (const d of cfg.dashboards) {
       const spanCols = toInt(d.spanCols, 1);
-
-      const sr = toNum(d.spanRows);
-      const heightFactor =
-        toNum(d.heightFactor) ??
-        ((sr !== undefined && !Number.isInteger(sr)) ? sr : undefined);
-
-      // Target content height for the inner frame
-      const targetHeightPx = heightFactor !== undefined
-        ? unitPx * heightFactor
-        : unitPx * toInt(d.spanRows, 1);
+      const factor   = toNum(d.heightFactor, 1);
+      const pixels   = Math.max(1, Math.round(unitPx * factor));
 
       const card = document.createElement('div');
       card.className = 'card';
       card.style.gridColumn = `span ${spanCols}`;
+      card.style.height = `${pixels}px`;
+      card.style.gridRowEnd = `span ${pixels}`;
 
       const containerId = `c_${d.id}`;
       card.innerHTML = `
         <h3 style="margin:0 0 12px">${d.title}</h3>
-        <div id="${containerId}" class="frame" style="height:${Math.round(targetHeightPx)}px"></div>
+        <div id="${containerId}" class="frame" style="height:100%"></div>
       `;
       grid.appendChild(card);
-
-      // Measure now and on future resizes
-      resizeCard(card);
-      ro.observe(card);
-
-      cards.push({ d, containerId, card });
+      cards.push({ d, containerId });
     }
 
-    // 5) Databricks embed
+    // Embed Databricks dashboards
     const { DatabricksDashboard } = await import(
       'https://cdn.jsdelivr.net/npm/@databricks/aibi-client@0.0.0-alpha.7/+esm'
     );
@@ -135,18 +111,11 @@
       if (cfg.viewer?.id)  u.searchParams.set('viewer', cfg.viewer.id);
       if (cfg.viewer?.val) u.searchParams.set('val', cfg.viewer.val);
 
-      let payload;
       try {
         const r = await fetch(u, { credentials: 'omit' });
-        payload = await r.json();
+        const payload = await r.json();
         if (!payload.token) throw new Error(payload.error || 'No token');
-      } catch (e) {
-        document.getElementById(containerId).innerHTML =
-          `<div class="small">Token error for "${d.title}": ${e.message || e}</div>`;
-        return;
-      }
 
-      try {
         const dash = new DatabricksDashboard({
           instanceUrl: payload.instanceUrl,
           workspaceId: payload.workspaceId,
@@ -157,20 +126,13 @@
         await dash.initialize();
       } catch (e) {
         document.getElementById(containerId).innerHTML =
-          `<div class="small">Render failed: ${d.title}. ${e.message || e}</div>`;
+          `<div class="small">Error loading "${d.title}": ${e.message || e}</div>`;
       }
     }
 
-    // Render sequentially and re-measure after each embed initializes
-    for (const { d, containerId, card } of cards) {
+    for (const { d, containerId } of cards) {
       await renderDashboard(d, containerId);
-      resizeCard(card);
     }
-
-    // Re-measure on window resize (fonts/width changes)
-    window.addEventListener('resize', () => {
-      for (const { card } of cards) resizeCard(card);
-    });
   </script>
 </body>
 </html>
