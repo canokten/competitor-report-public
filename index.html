@@ -68,26 +68,49 @@
       kpis.appendChild(div);
     }
 
-    // 4) Create cards for each dashboard with spans
+    // 4) Create cards for each dashboard with integer spanCols, fractional height via heightFactor
     const grid = document.getElementById('dash-grid');
-    function unitRows(n){ return Math.max(1, Number(n)||1); }
-    function unitCols(n){ return Math.max(1, Number(n)||1); }
+    const toInt = (v, def=1) => {
+      const n = Number(v);
+      return Number.isFinite(n) && n >= 1 ? Math.floor(n) : def;
+    };
+    const toNum = (v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : undefined;
+    };
 
     const cards = [];
     for (const d of cfg.dashboards) {
-      const spanRows = unitRows(d.spanRows);
-      const spanCols = unitCols(d.spanCols);
+      // Width: integer grid columns
+      const spanCols = toInt(d.spanCols, 1);
+
+      // Height:
+      // - Prefer explicit heightFactor if provided
+      // - Else if spanRows is fractional, treat that as heightFactor
+      // - Else use integer rows (default 1)
+      const sr = toNum(d.spanRows);
+      const heightFactor =
+        toNum(d.heightFactor) ??
+        ((sr !== undefined && !Number.isInteger(sr)) ? sr : undefined);
 
       const card = document.createElement('div');
       card.className = 'card';
-      card.style.gridRow = `span ${spanRows}`;
       card.style.gridColumn = `span ${spanCols}`;
+      // If using heightFactor (fractional), force 1 row and set explicit pixel height
+      // Otherwise, span integer rows and let the grid define height
+      let containerStyle = '';
+      if (heightFactor !== undefined) {
+        card.style.gridRow = 'span 1';
+        containerStyle = `style="height: calc(var(--unit) * ${heightFactor})"`;
+      } else {
+        const spanRowsInt = toInt(d.spanRows, 1);
+        card.style.gridRow = `span ${spanRowsInt}`;
+      }
 
-      // Height of the inner container = spanRows * X (CSS handles it via grid row height)
       const containerId = `c_${d.id}`;
       card.innerHTML = `
         <h3 style="margin:0 0 12px">${d.title}</h3>
-        <div id="${containerId}" class="frame"></div>
+        <div id="${containerId}" class="frame" ${containerStyle}></div>
       `;
       grid.appendChild(card);
       cards.push({ d, containerId });
