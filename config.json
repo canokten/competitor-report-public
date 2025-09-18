@@ -23,14 +23,14 @@
       "title": "Competitor Locations & Densities",
       "id": "01f08921e0a612739fcc3b61d87350bd",
       "spanCols": 2,
-      "spanRows": 2
+      "spanRows": 1
     },
 
     {
       "title": "Reviews Summary",
       "id": "01f09425ce691b82b5ba6fdd64634dc4",
       "spanCols": 2,
-      "spanRows": 3
+      "spanRows": 2
     },
 
     {
