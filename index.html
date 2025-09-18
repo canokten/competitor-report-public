@@ -10,7 +10,7 @@
     .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
     h1 { margin: 0 0 6px; }
     .muted { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
-    .card { background:var(--card); border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.25); display:flex; flex-direction:column; }
+    .card { background:var(--card); border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.25); display:flex; flex-direction:column; box-sizing: border-box; }
     .small { font-size:12px; color:var(--muted); }
 
     /* KPIs */
@@ -19,19 +19,19 @@
     .kpi h4 { margin:0 0 6px; font-weight:600; }
     .kpi .stat { font-size:24px; font-weight:700; }
 
-    /* Dashboard grid */
+    /* Dashboard grid — let rows size to content */
     .grid{
       display:grid;
       gap:16px;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-auto-rows: 1px !important;   /* critical for pixel-based spanning */
+      grid-template-columns: repeat(2, minmax(0, 1fr)); /* two columns */
+      grid-auto-rows: auto;            /* <- key: rows size to card height */
+      grid-auto-flow: row dense;       /* fills any holes when items span 2 cols */
       align-items: stretch;
     }
-    .card, .frame { box-sizing: border-box; }  /* keeps heights predictable */
     @media (max-width: 979px){
       .grid { grid-template-columns: 1fr; } /* collapse on mobile */
     }
-    .frame { width:100%; border:0; background:var(--bg); flex:1 1 auto; }
+    .frame { width:100%; border:0; background:var(--bg); flex:1 1 auto; box-sizing: border-box; }
   </style>
 </head>
 <body>
@@ -84,26 +84,20 @@
     for (const d of cfg.dashboards) {
       const spanCols = toInt(d.spanCols, 1);
       const factor   = toNum(d.heightFactor, 1);
-      const pixels   = Math.max(1, Math.round(unitPx * factor));  // target visual height
+      const pixels   = Math.max(1, Math.round(unitPx * factor));  // target height
 
       const card = document.createElement('div');
       card.className = 'card';
       card.style.gridColumn = `span ${spanCols}`;
-      card.style.height = `${pixels}px`;          // visual height (border-box)
+      card.style.height = `${pixels}px`;   // let auto-rows size the grid to this
 
       const containerId = `c_${d.id}`;
       card.innerHTML = `
         <h3 style="margin:0 0 12px">${d.title}</h3>
         <div id="${containerId}" class="frame" style="height:100%"></div>
       `;
-
       grid.appendChild(card);
-
-      // Measure actual rendered height (accounts for padding/header/fonts)
-      const actual = Math.ceil(card.getBoundingClientRect().height);
-      card.style.gridRowEnd = `span ${actual}`;   // rows are 1px; span exact pixels
-
-      cards.push({ d, containerId, card });
+      cards.push({ d, containerId });
     }
 
     // Embed Databricks dashboards
@@ -136,21 +130,9 @@
       }
     }
 
-    // Render sequentially
-    for (const { d, containerId, card } of cards) {
+    for (const { d, containerId } of cards) {
       await renderDashboard(d, containerId);
-      // Re-span once more in case fonts/layout shift slightly after load
-      const actual = Math.ceil(card.getBoundingClientRect().height);
-      card.style.gridRowEnd = `span ${actual}`;
     }
-
-    // If you want to be extra safe on window resize:
-    window.addEventListener('resize', () => {
-      for (const { card } of cards) {
-        const actual = Math.ceil(card.getBoundingClientRect().height);
-        card.style.gridRowEnd = `span ${actual}`;
-      }
-    });
   </script>
 </body>
 </html>
