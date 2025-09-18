@@ -76,20 +76,19 @@ competitor-analysis/
 ## 🔄 Data Pipeline (Medallion Architecture)
 
 1. **Bronze Layer**  
-   - Ingest raw Google Maps JSON (places, reviews, services).
+   - Ingest raw Google Maps JSON (places, reviews, services) and Apify reviews JSON.
    - Minimal processing; raw history preserved.
 
 2. **Silver Layer**  
-   - Normalize entities: `places_info`, `places_base`, `reviews_norm`, `services_bridge`.  
-   - Handle missing values, deduplicate records, standardize coordinates.
+   - Normalize entities: `places_info`, `places_base`, `reviews_norm`.  
+   - Handle missing values, deduplicate records, standardize coordinates using geomap data.
 
 3. **Gold Layer**  
    - Create **analytics-ready tables**.  
    - KPIs:
-     - Average rating by neighborhood  
-     - Competitor density maps  
+     - Average rating and densities by neighborhood  
+     - Competitor density maps 
      - Review sentiment breakdown (praise vs complaint categories)  
-     - Service coverage distribution  
      - **Weighted score metric** (`rating × log(1 + reviews)`)
 
 ---
@@ -102,7 +101,6 @@ Key sections of the report:
 - **Competitor Density**: By neighborhood and map-based
 - **Ratings & Reviews**: Distributions, averages, and trends
 - **Sentiment Analysis**: Top complaint/praise categories
-- **Service Coverage**: Which services are most common, where
 
 ---
 
@@ -115,15 +113,8 @@ Key sections of the report:
 
 ---
 
-## 📈 Example Insights
-- Downtown neighborhoods had the **highest competitor density**, but also **lower average ratings**.  
-- Service distribution revealed **underserved categories** (e.g., salons with no men’s cut specialization in certain areas).  
-- Sentiment analysis showed **“rushed/careless cuts”** as a top complaint category, highlighting actionable improvement areas.  
-
----
-
 ## 🔒 Access & Limitations
-- Data was collected using **Apify Google Maps scrapers** (limited by free-tier quota).  
+- Review data was collected using **Apify Google Maps scrapers** (limited by free-tier quota).  
 - **Lakeview dashboards** require proper **service principal permissions** if replicated.  
 - Demo HTML report contains **publicly shareable dashboards** (links redacted in this repo).  
 
