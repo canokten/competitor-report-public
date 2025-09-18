@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Hair Salons — Vancouver, BC",
-    "subtitle": "Live dashboards (public test)"
+    "subtitle": "Live dashboards (public). Refresh the page if a dashboard is missing or doesn't show."
   },
   "viewer": { "id": "public", "val": "na" },
 
