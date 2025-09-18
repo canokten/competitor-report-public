@@ -31,6 +31,7 @@ The solution combines **data extraction, ETL pipelines, analytics modeling, and 
 ---
 
 ## 📂 Project Structure
+```text
 competitor-analysis/
 │
 ├── data/                         # Example raw data (sample JSONs)
@@ -57,7 +58,7 @@ competitor-analysis/
 │   └── sentiment_labeller.py     # LLM review sentiment labeling
 │
 └── README.md                     # Project documentation
-
+```
 
 ---
 
