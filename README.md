@@ -1,5 +1,3 @@
-https://opendata.vancouver.ca/explore/dataset/local-area-boundary/export/?disjunctive.name - Geomap for Vancouver
-
 # Competitor Analysis SaaS Prototype
 
 *A data engineering + analytics project built on Databricks with Google Maps data integration*
@@ -34,32 +32,45 @@ The solution combines **data extraction, ETL pipelines, analytics modeling, and 
 ```text
 competitor-analysis/
 │
-├── data/                         # Example raw data (sample JSONs)
-│   └── hair-salons-merged.json
+├── data/                              # Data artifacts
+│   ├── raw/                           # Raw Apify + Google Maps API JSONs
+│   │   ├── apify_places.json
+│   │   ├── apify_ratings.json
+│   │   └── apify_reviews.json
+│   ├── staged/                        # Cleaned & merged exports
+│   │   └── hair-salons-merged.json
+│   └── outputs/                       # Aggregated exports for visuals
+│       ├── top_complaints.csv
+│       ├── top_praises.csv
+│       └── kpis.csv
 │
-├── notebooks/                    # Databricks notebooks (Python + SQL)
-│   ├── 01_bronze_ingestion.ipynb
-│   ├── 02_silver_transformations.sql
-│   ├── 03_gold_kpis_and_sentiment.ipynb
-│   └── 04_visualization_prep.ipynb
+├── notebooks/                         # Databricks notebooks (Python + SQL)
+│   ├── 01_ingest_raw_bronze.ipynb     # Ingest Apify/API JSON → bronze tables
+│   ├── 02_clean_merge_silver.ipynb    # Filter hair salons, clean & merge → silver tables
+│   ├── 03_flatten_model.ipynb         # Flatten JSON → places_base, places_info, places_reviews
+│   ├── 04_llm_sentiment.ipynb         # Run LLM on reviews → df_events (complaints/praises)
+│   ├── 05_taxonomy_normalize.ipynb    # Normalize categories & shorten aspect/detail labels
+│   ├── 06_aggregations_gold.sql       # Aggregations & KPIs → gold tables
+│   └── 07_visualization_prep.ipynb    # Prep viz-ready wide tables for Lakeview dashboards
 │
-├── dashboards/                   # Lakeview dashboard configs
-│   ├── competitor_density.json
-│   ├── review_sentiment.json
-│   └── service_distribution.json
+├── dashboards/                        # Lakeview dashboard configs
+│   ├── Business Density by Neighborhood
+│   ├── Neighborhood Performance Score
+│   ├── Competitor Locations & Densities
+│   ├── Review Categories Summary
+│   ├── Top 25 Salons (Weighted Score)
+│   └── Bottom 25 Salons (Weighted Score)
 │
-├── html_report/                  # Frontend embedding
+├── html_report/                       # Frontend embedding
 │   ├── index.html
-│   └── config.json               # Dashboard URLs & service principal
+│   └── config.json                    # Dashboard URLs & service principal
 │
-├── scripts/                      # Helper scripts (local runs)
-│   ├── apify_scraper.py          # Apify Google Maps scraping
-│   ├── google_api_fetch.py       # Google Maps API integration
-│   └── sentiment_labeller.py     # LLM review sentiment labeling
+├── scripts/                           # Helper scripts (local runs / API calls)
+│   ├── googlemaps-api.ipynb           # Google Maps API integration
+│   └── google_api_fetch.py            # Geomap Correcting Neighborhoods [Geomap for Vancouver](https://opendata.vancouver.ca/explore/dataset/local-area-boundary/export/?disjunctive.name))
 │
-└── README.md                     # Project documentation
+└── README.md                          # Project documentation
 ```
-
 ---
 
 ## 🔄 Data Pipeline (Medallion Architecture)
