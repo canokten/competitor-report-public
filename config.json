@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Hair Salons — Vancouver, BC",
-    "subtitle": "Live dashboards (public). Refresh the page if a dashboard is missing or doesn't show."
+    "subtitle": "Please refresh the page if a dashboard is missing or doesn't show."
   },
   "viewer": { "id": "public", "val": "na" },
 
@@ -25,19 +25,19 @@
       "heightFactor": 1.25
     },
     {
-      "title": "Reviews Summary",
+      "title": "Review Categories Summary",
       "id": "01f09425ce691b82b5ba6fdd64634dc4",
       "spanCols": 2,
       "heightFactor": 1.9
     },
     {
-      "title": "Top 25 (Weighted Score)",
+      "title": "Top 25 Salons (Weighted Score)",
       "id": "01f08921eed412aeb33d7a48d7304cfd",
       "spanCols": 1,
       "heightFactor": 1
     },
     {
-      "title": "Bottom 25 (Weighted Score)",
+      "title": "Bottom 25 Salons (Weighted Score)",
       "id": "01f08921fb4516ccb2a247155430cb2f",
       "spanCols": 1,
       "heightFactor": 1
