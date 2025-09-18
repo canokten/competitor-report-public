@@ -10,7 +10,7 @@
     .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
     h1 { margin: 0 0 6px; }
     .muted { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
-    .card { background:var(--card); border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.25); display:flex; flex-direction:column; box-sizing: border-box; }
+    .card { background:var(--card); border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.25); display:flex; flex-direction:column; box-sizing:border-box; }
     .small { font-size:12px; color:var(--muted); }
 
     /* KPIs */
@@ -19,19 +19,20 @@
     .kpi h4 { margin:0 0 6px; font-weight:600; }
     .kpi .stat { font-size:24px; font-weight:700; }
 
-    /* Dashboard grid — let rows size to content */
-    .grid{
-      display:grid;
-      gap:16px;
-      grid-template-columns: repeat(2, minmax(0, 1fr)); /* two columns */
-      grid-auto-rows: auto;            /* <- key: rows size to card height */
-      grid-auto-flow: row dense;       /* fills any holes when items span 2 cols */
+    /* Dashboards — FLEXBOX (no grid rows, no spans, no gaps) */
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;                /* same visual gap as before */
       align-items: stretch;
     }
+    /* Default card width = half (2 columns); full width when spanCols:2 */
+    .frame { width:100%; border:0; background:var(--bg); flex:1 1 auto; box-sizing:border-box; }
+
     @media (max-width: 979px){
-      .grid { grid-template-columns: 1fr; } /* collapse on mobile */
+      /* On mobile, stack: one per row */
+      .grid > .card { width: 100% !important; }
     }
-    .frame { width:100%; border:0; background:var(--bg); flex:1 1 auto; box-sizing: border-box; }
   </style>
 </head>
 <body>
@@ -80,16 +81,17 @@
     };
 
     // Build cards — width via spanCols, height via heightFactor * X
+    const halfWidth = 'calc((100% - 16px) / 2)';  // gap is 16px
     const cards = [];
     for (const d of cfg.dashboards) {
-      const spanCols = toInt(d.spanCols, 1);
-      const factor   = toNum(d.heightFactor, 1);
-      const pixels   = Math.max(1, Math.round(unitPx * factor));  // target height
+      const spanCols = toInt(d.spanCols, 1);       // 1 => half width, 2 => full width
+      const factor   = toNum(d.heightFactor, 1);   // fractional heights allowed
+      const pixels   = Math.max(1, Math.round(unitPx * factor));
 
       const card = document.createElement('div');
       card.className = 'card';
-      card.style.gridColumn = `span ${spanCols}`;
-      card.style.height = `${pixels}px`;   // let auto-rows size the grid to this
+      card.style.width = (spanCols >= 2) ? '100%' : halfWidth;
+      card.style.height = `${pixels}px`;
 
       const containerId = `c_${d.id}`;
       card.innerHTML = `
