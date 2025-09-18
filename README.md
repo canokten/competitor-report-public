@@ -1,3 +1,7 @@
+📊📄[Access the report here.](https://canokten.github.io/competitor-report-public/)
+
+---
+
 # Competitor Analysis SaaS Prototype
 
 *A data engineering + analytics project built on Databricks with Google Maps data integration*
