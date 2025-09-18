@@ -19,20 +19,18 @@
     .kpi h4 { margin:0 0 6px; font-weight:600; }
     .kpi .stat { font-size:24px; font-weight:700; }
 
-    /* Dashboards — FLEXBOX (no grid rows, no spans, no gaps) */
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;                /* same visual gap as before */
+    /* Dashboards — pure grid with auto-sized rows (no manual spanning) */
+    .grid{
+      display:grid;
+      gap:16px;
+      grid-template-columns: repeat(2, minmax(0, 1fr)); /* two columns */
+      /* rows auto-size to the tallest card in that row */
       align-items: stretch;
     }
-    /* Default card width = half (2 columns); full width when spanCols:2 */
-    .frame { width:100%; border:0; background:var(--bg); flex:1 1 auto; box-sizing:border-box; }
-
     @media (max-width: 979px){
-      /* On mobile, stack: one per row */
-      .grid > .card { width: 100% !important; }
+      .grid { grid-template-columns: 1fr; } /* stack on mobile */
     }
+    .frame { width:100%; border:0; background:var(--bg); box-sizing:border-box; /* height set inline per card */ }
   </style>
 </head>
 <body>
@@ -80,23 +78,22 @@
       return Number.isFinite(n) && n > 0 ? n : def;
     };
 
-    // Build cards — width via spanCols, height via heightFactor * X
-    const halfWidth = 'calc((100% - 16px) / 2)';  // gap is 16px
+    // Build cards — width via spanCols, height via heightFactor * X (on .frame only)
     const cards = [];
     for (const d of cfg.dashboards) {
-      const spanCols = toInt(d.spanCols, 1);       // 1 => half width, 2 => full width
-      const factor   = toNum(d.heightFactor, 1);   // fractional heights allowed
+      const spanCols = toInt(d.spanCols, 1);         // 1 => half; 2 => full width
+      const factor   = toNum(d.heightFactor, 1);     // fractional OK
       const pixels   = Math.max(1, Math.round(unitPx * factor));
 
       const card = document.createElement('div');
       card.className = 'card';
-      card.style.width = (spanCols >= 2) ? '100%' : halfWidth;
-      card.style.height = `${pixels}px`;
+      card.style.gridColumn = `span ${spanCols}`;
+      // IMPORTANT: no card.style.height, no gridRowEnd
 
       const containerId = `c_${d.id}`;
       card.innerHTML = `
         <h3 style="margin:0 0 12px">${d.title}</h3>
-        <div id="${containerId}" class="frame" style="height:100%"></div>
+        <div id="${containerId}" class="frame" style="height:${pixels}px"></div>
       `;
       grid.appendChild(card);
       cards.push({ d, containerId });
