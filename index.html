@@ -10,7 +10,7 @@
     .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
     h1 { margin: 0 0 6px; }
     .muted { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
-    .card { background:var(--card); border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.25); }
+    .card { background:var(--card); border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.25); display:flex; flex-direction:column; }
     .small { font-size:12px; color:var(--muted); }
 
     /* KPIs */
@@ -24,13 +24,13 @@
       display:grid;
       gap:16px;
       grid-template-columns: repeat(2, minmax(0, 1fr)); /* two columns */
-      grid-auto-rows: var(--unit); /* each row = X */
+      grid-auto-rows: 1px; /* <-- key: 1px tracks; items span pixels */
       align-items: stretch;
     }
     @media (max-width: 979px){
       .grid { grid-template-columns: 1fr; } /* collapse on mobile */
     }
-    .frame { width:100%; border:0; background:var(--bg); height:100%; }
+    .frame { width:100%; border:0; background:var(--bg); flex:1 1 auto; }
   </style>
 </head>
 <body>
@@ -68,8 +68,13 @@
       kpis.appendChild(div);
     }
 
-    // 4) Create cards for each dashboard with integer spanCols, fractional height via heightFactor
+    // 4) Create cards with integer spanCols and pixel-based row spans (fractional factors supported)
     const grid = document.getElementById('dash-grid');
+
+    const cssUnitRaw = getComputedStyle(document.documentElement).getPropertyValue('--unit').trim();
+    // parse something like "560px" to 560
+    const unitPx = Number(cssUnitRaw.replace('px','').trim()) || 560;
+
     const toInt = (v, def=1) => {
       const n = Number(v);
       return Number.isFinite(n) && n >= 1 ? Math.floor(n) : def;
@@ -81,36 +86,27 @@
 
     const cards = [];
     for (const d of cfg.dashboards) {
-      // Width: integer grid columns
       const spanCols = toInt(d.spanCols, 1);
 
-      // Height:
-      // - Prefer explicit heightFactor if provided
-      // - Else if spanRows is fractional, treat that as heightFactor
-      // - Else use integer rows (default 1)
       const sr = toNum(d.spanRows);
       const heightFactor =
         toNum(d.heightFactor) ??
         ((sr !== undefined && !Number.isInteger(sr)) ? sr : undefined);
 
+      // Compute pixel span
+      const pixelSpan = heightFactor !== undefined
+        ? Math.max(1, Math.round(unitPx * heightFactor))
+        : Math.max(1, Math.round(unitPx * toInt(d.spanRows, 1)));
+
       const card = document.createElement('div');
       card.className = 'card';
       card.style.gridColumn = `span ${spanCols}`;
-      // If using heightFactor (fractional), force 1 row and set explicit pixel height
-      // Otherwise, span integer rows and let the grid define height
-      let containerStyle = '';
-      if (heightFactor !== undefined) {
-        card.style.gridRow = 'span 1';
-        containerStyle = `style="height: calc(var(--unit) * ${heightFactor})"`;
-      } else {
-        const spanRowsInt = toInt(d.spanRows, 1);
-        card.style.gridRow = `span ${spanRowsInt}`;
-      }
+      card.style.gridRow = `span ${pixelSpan}`; // <-- spans N pixels because auto-rows = 1px
 
       const containerId = `c_${d.id}`;
       card.innerHTML = `
         <h3 style="margin:0 0 12px">${d.title}</h3>
-        <div id="${containerId}" class="frame" ${containerStyle}></div>
+        <div id="${containerId}" class="frame"></div>
       `;
       grid.appendChild(card);
       cards.push({ d, containerId });
