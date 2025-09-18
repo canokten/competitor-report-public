@@ -15,7 +15,7 @@ The solution combines **data extraction, ETL pipelines, analytics modeling, and 
 ---
 
 ## 🛠️ Tools & Technologies
-- **Data Extraction**: [Apify](https://apify.com/) (Google Maps scraper),  **Google Maps API**
+- **Data Extraction**: [Apify](https://apify.com/) (Google Maps scraper),  [Google Maps API](https://developers.google.com/maps/documentation/places/web-service/overview)
 - **Data Engineering**: [Databricks](https://www.databricks.com/)  
   - Delta Lake  
   - SQL Warehouses  
@@ -33,29 +33,30 @@ The solution combines **data extraction, ETL pipelines, analytics modeling, and 
 ## 📂 Project Structure
 competitor-analysis/
 │
-├── data/ # Example raw data (sample JSONs)
-│ └── hair-salons-merged.json
+├── data/                         # Example raw data (sample JSONs)
+│   └── hair-salons-merged.json
 │
-├── notebooks/ # Databricks notebooks (Python + SQL)
-│ ├── 01_bronze_ingestion.ipynb
-│ ├── 02_silver_transformations.sql
-│ ├── 03_gold_kpis_and_sentiment.ipynb
-│ └── 04_visualization_prep.ipynb
+├── notebooks/                    # Databricks notebooks (Python + SQL)
+│   ├── 01_bronze_ingestion.ipynb
+│   ├── 02_silver_transformations.sql
+│   ├── 03_gold_kpis_and_sentiment.ipynb
+│   └── 04_visualization_prep.ipynb
 │
-├── dashboards/ # Lakeview dashboard configs
-│ ├── competitor_density.json
-│ ├── review_sentiment.json
-│ └── service_distribution.json
+├── dashboards/                   # Lakeview dashboard configs
+│   ├── competitor_density.json
+│   ├── review_sentiment.json
+│   └── service_distribution.json
 │
-├── html_report/ # Frontend embedding
-│ ├── index.html
-│ └── config.json # Dashboard URLs & service principal
+├── html_report/                  # Frontend embedding
+│   ├── index.html
+│   └── config.json               # Dashboard URLs & service principal
 │
-├── scripts/ # Helper scripts (local runs)
-│ ├── apify_scraper.py
-│ └── sentiment_labeller.py
+├── scripts/                      # Helper scripts (local runs)
+│   ├── apify_scraper.py          # Apify Google Maps scraping
+│   ├── google_api_fetch.py       # Google Maps API integration
+│   └── sentiment_labeller.py     # LLM review sentiment labeling
 │
-└── README.md # Project documentation
+└── README.md                     # Project documentation
 
 
 ---
