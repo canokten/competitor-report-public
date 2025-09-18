@@ -1,4 +1,4 @@
-📊📄[Access the report here.](https://canokten.github.io/competitor-report-public/)
+# 📊 [Access the report here.](https://canokten.github.io/competitor-report-public/)
 
 ---
 
