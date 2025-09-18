@@ -20,13 +20,14 @@
     .kpi .stat { font-size:24px; font-weight:700; }
 
     /* Dashboard grid */
-    .grid {
+    .grid{
       display:grid;
       gap:16px;
-      grid-template-columns: repeat(2, minmax(0, 1fr)); /* two columns */
-      grid-auto-rows: 1px; /* each "row unit" is 1px; cards span N px */
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-rows: 1px !important;   /* <- critical */
       align-items: stretch;
     }
+    .card, .frame { box-sizing: border-box; }  /* keeps heights predictable */
     @media (max-width: 979px){
       .grid { grid-template-columns: 1fr; } /* collapse on mobile */
     }
