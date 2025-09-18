@@ -5,20 +5,32 @@
   <title>Competitor Report — Vancouver, BC</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root { --bg:#0b1020; --card:#121a35; --ink:#e6ecff; --muted:#9fb3ff; }
+    :root { --bg:#0b1020; --card:#121a35; --ink:#e6ecff; --muted:#9fb3ff; --unit:560px; } /* X = 560px */
     body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:var(--bg); color:var(--ink); }
     .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
     h1 { margin: 0 0 6px; }
     .muted { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
-    .grid { display:grid; gap:16px; grid-template-columns: 1fr; }
-    @media (min-width: 980px){ .grid { grid-template-columns: 1fr 1fr; } }
     .card { background:var(--card); border-radius:16px; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.25); }
-    .frame { width:100%; height:560px; border:0; background:var(--bg); }
     .small { font-size:12px; color:var(--muted); }
+
+    /* KPIs */
     .kpis { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:12px; margin:16px 0 8px; }
     .kpi { background:var(--card); padding:12px; border-radius:12px; }
     .kpi h4 { margin:0 0 6px; font-weight:600; }
     .kpi .stat { font-size:24px; font-weight:700; }
+
+    /* Dashboard grid */
+    .grid {
+      display:grid;
+      gap:16px;
+      grid-template-columns: repeat(2, minmax(0, 1fr)); /* two columns */
+      grid-auto-rows: var(--unit); /* each row = X */
+      align-items: stretch;
+    }
+    @media (max-width: 979px){
+      .grid { grid-template-columns: 1fr; } /* collapse on mobile */
+    }
+    .frame { width:100%; border:0; background:var(--bg); height:100%; }
   </style>
 </head>
 <body>
@@ -56,14 +68,29 @@
       kpis.appendChild(div);
     }
 
-    // 4) Create cards for each dashboard
+    // 4) Create cards for each dashboard with spans
     const grid = document.getElementById('dash-grid');
+    function unitRows(n){ return Math.max(1, Number(n)||1); }
+    function unitCols(n){ return Math.max(1, Number(n)||1); }
+
+    const cards = [];
     for (const d of cfg.dashboards) {
+      const spanRows = unitRows(d.spanRows);
+      const spanCols = unitCols(d.spanCols);
+
       const card = document.createElement('div');
       card.className = 'card';
-      const h = d.height || 560;
-      card.innerHTML = `<h3 style="margin:0 0 12px">${d.title}</h3><div id="c_${d.id}" class="frame" style="height:${h}px"></div>`;
+      card.style.gridRow = `span ${spanRows}`;
+      card.style.gridColumn = `span ${spanCols}`;
+
+      // Height of the inner container = spanRows * X (CSS handles it via grid row height)
+      const containerId = `c_${d.id}`;
+      card.innerHTML = `
+        <h3 style="margin:0 0 12px">${d.title}</h3>
+        <div id="${containerId}" class="frame"></div>
+      `;
       grid.appendChild(card);
+      cards.push({ d, containerId });
     }
 
     // 5) Lazy-load Databricks client
@@ -71,7 +98,7 @@
       'https://cdn.jsdelivr.net/npm/@databricks/aibi-client@0.0.0-alpha.7/+esm'
     );
 
-    async function renderDashboard(d) {
+    async function renderDashboard(d, containerId) {
       // fetch a down-scoped token for THIS dashboard id
       const u = new URL(TOKEN_ENDPOINT);
       u.searchParams.set('dashboard', d.id);
@@ -84,7 +111,7 @@
         payload = await r.json();
         if (!payload.token) throw new Error(payload.error || 'No token');
       } catch (e) {
-        document.getElementById(`c_${d.id}`).innerHTML =
+        document.getElementById(containerId).innerHTML =
           `<div class="small">Token error for "${d.title}": ${e.message || e}</div>`;
         return;
       }
@@ -95,17 +122,19 @@
           workspaceId: payload.workspaceId,
           dashboardId: d.id,
           token: payload.token,
-          container: document.getElementById(`c_${d.id}`)
+          container: document.getElementById(containerId)
         });
         await dash.initialize();
       } catch (e) {
-        document.getElementById(`c_${d.id}`).innerHTML =
+        document.getElementById(containerId).innerHTML =
           `<div class="small">Render failed: ${d.title}. ${e.message || e}</div>`;
       }
     }
 
     // Render sequentially (reduce burst requests)
-    for (const d of cfg.dashboards) await renderDashboard(d);
+    for (const { d, containerId } of cards) {
+      await renderDashboard(d, containerId);
+    }
   </script>
 </body>
 </html>
