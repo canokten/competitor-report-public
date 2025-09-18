@@ -10,41 +10,38 @@
       "title": "Business Density by Neighborhood",
       "id": "01f0891982461429a870fd0d521d7867",
       "spanCols": 1,
-      "spanRows": 1,
       "heightFactor": 0.8
     },
     {
       "title": "Neighborhood Performance Score",
       "id": "01f08921c16d1ce786acc9605ed84f2f",
       "spanCols": 1,
-      "spanRows": 1,
       "heightFactor": 0.8
     },
     {
       "title": "Competitor Locations & Densities",
       "id": "01f08ce06ff6125e95ad67b580e04420",
       "spanCols": 2,
-      "spanRows": 1,
       "heightFactor": 1.25
     },
     {
       "title": "Reviews Summary",
-      "id": "01f09425ce691b82b5ba6fdd64634dc4",
+      "id": "XXX",
       "spanCols": 2,
-      "spanRows": 1,
       "heightFactor": 1.9
     },
     {
       "title": "Top 25 (Weighted Score)",
       "id": "01f08921eed412aeb33d7a48d7304cfd",
       "spanCols": 1,
-      "spanRows": 1
+      "heightFactor": 1
     },
     {
       "title": "Bottom 25 (Weighted Score)",
       "id": "01f08921fb4516ccb2a247155430cb2f",
       "spanCols": 1,
-      "spanRows": 1
+      "heightFactor": 1
     }
   ]
 }
+
