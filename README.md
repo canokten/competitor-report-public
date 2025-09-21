@@ -10,7 +10,7 @@
 
 ---
 
-## 📌 Overview
+## Overview
 This project is a **Competitor Analysis SaaS prototype** designed to help local businesses understand their competitive landscape.  
 The demo case focuses on **hair salons in Vancouver**, but the system is **sector-agnostic** (extendable to restaurants, tattoo shops, bars, etc.).
 
@@ -18,7 +18,7 @@ The solution combines **data extraction, ETL pipelines, analytics modeling, and 
 
 ---
 
-## 🛠️ Tools & Technologies
+## Tools & Technologies
 - **Data Extraction**: [Apify](https://apify.com/) (Google Maps scraper),  [Google Maps API](https://developers.google.com/maps/documentation/places/web-service/overview)
 - **Data Engineering**: [Databricks](https://www.databricks.com/)  
   - Delta Lake  
@@ -34,7 +34,7 @@ The solution combines **data extraction, ETL pipelines, analytics modeling, and 
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 ```text
 competitor-analysis/
 │
@@ -79,7 +79,7 @@ competitor-analysis/
 ```
 ---
 
-## 🔄 Data Pipeline (Medallion Architecture)
+## Data Pipeline (Medallion Architecture)
 
 1. **Bronze Layer**  
    - Ingest raw Google Maps JSON (places, reviews, services) and Apify reviews JSON.
@@ -99,7 +99,7 @@ competitor-analysis/
 
 ---
 
-## 📊 Visuals & Reporting
+## Visualizations & Reporting
 All visuals were built in **Databricks Lakeview** and embedded into an **HTML report** for easy sharing.  
 
 Key sections of the report:
@@ -110,7 +110,7 @@ Key sections of the report:
 
 ---
 
-## 🚀 Key Features
+## Key Features
 - **End-to-End Pipeline**: From raw Google Maps data → insights in a dashboard  
 - **Sector-Agnostic**: Works for salons, restaurants, tattoo shops, and more  
 - **Custom Metrics**: Weighted scores, density calculations, LLM sentiment categories  
@@ -119,7 +119,7 @@ Key sections of the report:
 
 ---
 
-## 🔒 Access & Limitations
+## Access & Limitations
 - Review data was collected using **Apify Google Maps scrapers** (limited by free-tier quota).  
 - **Lakeview dashboards** require proper **service principal permissions** if replicated.  
 - Demo HTML report contains **publicly shareable dashboards** (links redacted in this repo).  
@@ -134,7 +134,7 @@ Key sections of the report:
 
 ---
 
-## 📬 Contact
+## Contact Info
 Created by Can Okten  
 - 💼 [LinkedIn](https://www.linkedin.com/](https://www.linkedin.com/in/canokten/)
 - 📧 canokten.job@gmail.com 
