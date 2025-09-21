@@ -126,7 +126,7 @@ Key sections of the report:
 
 ---
 
-## 🧭 Future Improvements
+## Future Improvements
 - Add **scheduled ingestion** (Airflow/Databricks Jobs).  
 - Extend to **multi-city, multi-sector monitoring**.  
 - Enhance **review sentiment model** with fine-tuned LLM.  
