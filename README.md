@@ -4,7 +4,8 @@
 
 ---
 
-# Competitor Analysis SaaS Prototype [Demo - Hair Salons in Vancouver]
+# Competitor Analysis SaaS Prototype 
+## Demo - Hair Salons in Vancouver
 
 *A data engineering + analytics project built on Databricks with Google Maps data integration*
 
