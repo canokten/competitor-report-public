@@ -1,11 +1,10 @@
 ---
 
-## 📊 [Access the report here.](https://canokten.github.io/competitor-report-public/)
+## 📊 [Access the demo report here.](https://canokten.github.io/competitor-report-public/)
 
 ---
 
-# Competitor Analysis SaaS Prototype 
-## Demo - Hair Salons in Vancouver
+# Competitor Analysis SaaS Prototype (Hair Salons in Vancouver)
 
 *A data engineering + analytics project built on Databricks with Google Maps data integration*
 
