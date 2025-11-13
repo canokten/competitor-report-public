@@ -127,7 +127,7 @@ All visuals are built in **Databricks Lakeview** and embedded into an **HTML rep
 
 ## Contact Info
 Created by Can Okten  
-- 💼 [LinkedIn](https://www.linkedin.com/](https://www.linkedin.com/in/canokten/)
+- 💼 [LinkedIn](https://www.linkedin.com/in/canokten/)
 - 📧 canokten.job@gmail.com 
 
 If you’d like to explore extending this SaaS for your sector or region, feel free to connect!
