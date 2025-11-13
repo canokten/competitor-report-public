@@ -100,28 +100,21 @@ competitor-analysis/
 ---
 
 ## Visualizations & Reporting
-All visuals were built in **Databricks Lakeview** and embedded into an **HTML report** for easy sharing.  
-
-Key sections of the report:
-- **Executive Summary**: KPIs & weighted scores
-- **Competitor Density**: By neighborhood and map-based
-- **Ratings & Reviews**: Distributions, averages, and trends
-- **Sentiment Analysis**: Top complaint/praise categories
+All visuals are built in **Databricks Lakeview** and embedded into an **HTML report** for easy sharing, with appropriate Service Principal authorizations saved in Vercel environment. 
 
 ---
 
 ## Key Features
-- **End-to-End Pipeline**: From raw Google Maps data → insights in a dashboard  
-- **Custom Metrics**: Weighted scores, density calculations, LLM sentiment categories  
-- **Interactive Dashboards**: Embedded directly into a shareable HTML report  
-- **Scalable**: Built on Databricks medallion architecture and Delta Lake  
+- End-to-end pipeline with dynamic data ingestion - from raw Google Maps data (can be triggered periodically) to insights in a dashboard.
+- Custom metrics such as weighted scores and normalized taxonomies of LLM sentiment categories
+- Interactive dashboards embedded directly into the shareable HTML report with dropdown features, filters and map navigation. 
 
 ---
 
 ## Access & Limitations
-- Review data was collected using **Apify Google Maps scrapers** (limited by free-tier quota).  
+- Google Maps places can be extracted using Google Places API (names, coordinates, ratings, contact information, etc.) within the free credit limit with ease.
+- Customer review data, on the other hand, was collected using **Apify Google Maps scrapers** (limited by free-tier quota).  
 - **Lakeview dashboards** require proper **service principal permissions** if replicated.
-- Can be **Sector-Agnostic**: Pipeline can work for restaurants, clothing stores, tattoo shops, and more (free-tier quoats limits the report to be only hair salon's in Vancouver)
 
 ---
 
